@@ -1,4 +1,4 @@
-@import-normalize;
+/* @import-normalize; */
 /* bring in normalize.css styles */
 
 body {
@@ -8,11 +8,52 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: aqua;
+}
+
+ul {
+  list-style: none;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
 
+div {
+  padding: 40px;
+}
 
+input {
+  width: 110px;
+  border-radius: 15px;
+  padding: 5px;
+  margin: 5px auto;
+  color: rgb(13, 3, 38);
+  font-size: 16px;
+  background-color: rgb(199, 235, 244);
+  margin: 10px;
+}
+
+input:hover,
+input:focus {
+  color: rgb(4, 7, 46);
+  border-color: white;
+}
+
+button {
+  width: 110px;
+  border-radius: 15px;
+  padding: 5px;
+  margin: 5px auto;
+  color: rgb(13, 3, 38);
+  font-size: 16px;
+  background-color: rgb(56, 170, 170);
+  margin-right: 10px;
+
+}
+
+button:hover {
+  color: white;
+  border-color: white;
 }
