@@ -1,5 +1,3 @@
-// import { nanoid } from 'nanoid';
-
 export const Filtr = ({ filtr, onFiltr }) => {
   return (
     <>

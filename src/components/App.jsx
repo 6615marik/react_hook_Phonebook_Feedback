@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Section } from './Section/Section';
 import { Statistics } from './Statistics/Statistics';
 import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
@@ -9,55 +9,43 @@ import { Filtr } from './Form/Filtr';
 // import Notiflix from 'notiflix';
 import { nanoid } from 'nanoid';
 
-export class App extends Component {
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-    contacts: [
-      { id: '1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: '2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: '3', name: 'Eden Clements', number: '645-17-79' },
-      { id: '4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filtr: '',
-  };
+export const App = () => {
+  const [good, SetGood] = useState(0);
+  const [neutral, SetNeutral] = useState(0);
+  const [bad, SetBad] = useState(0);
+  const [contacts, SetContacts] = useState(() => {
+    return (
+      JSON.parse(window.localStorage.getItem('contacts')) ?? [
+        { id: '1', name: 'Rosie Simpson', number: '459-12-56' },
+        { id: '2', name: 'Hermione Kline', number: '443-89-12' },
+        { id: '3', name: 'Eden Clements', number: '645-17-79' },
+        { id: '4', name: 'Annie Copeland', number: '227-91-26' },
+      ]
+    );
+  });
+  const [filtr, SetFiltr] = useState('');
 
-  componentDidMount() {
-    try {
-      const local = localStorage.getItem('contactLS');
-      const contacts = JSON.parse(local);
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-      if (contacts) {
-        this.setState({ contacts: contacts });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  componentDidUpdate(prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      const contjson = JSON.stringify(this.state.contacts);
-      localStorage.setItem('contactLS', contjson);
-    }
-  }
-
-  onIncrement = e => {
+  const onIncrement = e => {
     const { name } = e.target;
-    this.setState(prevstate => ({ [name]: prevstate[name] + 1 }));
+    if (name === 'good') SetGood(prev => prev + 1);
+    if (name === 'bad') SetBad(prev => prev + 1);
+    if (name === 'neutral') SetNeutral(prev => prev + 1);
   };
 
-  countTotalFeedback = () => {
-    return this.state.good + this.state.neutral + this.state.bad;
+  const countTotalFeedback = () => {
+    return good + neutral + bad;
   };
-  countPositiveFeedbackPercentage = () => {
-    return Math.round((this.state.good / this.countTotalFeedback()) * 100);
+  const countPositiveFeedbackPercentage = () => {
+    return Math.round((good / countTotalFeedback()) * 100);
   };
 
-  onFormData = data => {
+  const onFormData = data => {
     console.log(data);
-    const { contacts } = this.state;
+
     if (contacts.find(contact => contact.name === data.name)) {
       alert(`${data.name} is already in contacts`);
       return;
@@ -66,57 +54,50 @@ export class App extends Component {
       id: nanoid(),
       ...data,
     };
-    this.setState(({ contacts }) => {
-      return { contacts: [...contacts, newContact] };
+    SetContacts(contacts => {
+      return [...contacts, newContact];
     });
   };
 
-  onFiltrData = e => {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
+  const onFiltrData = e => {
+    const { value } = e.target;
+    SetFiltr(value);
   };
-  onFilterContacts = () => {
-    const { contacts, filtr } = this.state;
+
+  const onFilterContacts = () => {
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(filtr.toLowerCase())
     );
   };
-  onRemoveContact = id =>
-    this.setState(({ contacts }) => ({
-      contacts: contacts.filter(contact => contact.id !== id),
-    }));
+  const onRemoveContact = id =>
+    SetContacts(contacts => contacts.filter(contact => contact.id !== id));
 
-  render() {
-    const { good, bad, neutral, filtr, contacts } = this.state;
-    let total = this.countTotalFeedback();
-
-    console.log(this.state);
-    return (
-      <>
-        <Section title="Please leave feedback">
-          <FeedbackOptions
-            options={{ good, bad, neutral }}
-            onLeaveFeedback={this.onIncrement}
-          />
-          {total === 0 ? (
-            <Noification message="There is no feedback" />
-          ) : (
-            <Statistics
-              good={good}
-              neutral={neutral}
-              bad={bad}
-              total={total}
-              positivePercentage={this.countPositiveFeedbackPercentage()}
-            />
-          )}
-        </Section>
-        <Form onSubmit={this.onFormData} />
-        <Filtr filtr={filtr} onFiltr={this.onFiltrData} />
-        <Contacts
-          onRemove={this.onRemoveContact}
-          contacts={this.onFilterContacts(filtr, contacts)}
+  let total = countTotalFeedback();
+  return (
+    <>
+      <Section title="Please leave feedback">
+        <FeedbackOptions
+          options={{ good, bad, neutral }}
+          onLeaveFeedback={onIncrement}
         />
-      </>
-    );
-  }
-}
+        {total === 0 ? (
+          <Noification message="There is no feedback" />
+        ) : (
+          <Statistics
+            good={good}
+            neutral={neutral}
+            bad={bad}
+            total={total}
+            positivePercentage={countPositiveFeedbackPercentage()}
+          />
+        )}
+      </Section>
+      <Form onSubmit={onFormData} />
+      <Filtr filtr={filtr} onFiltr={onFiltrData} />
+      <Contacts
+        onRemove={onRemoveContact}
+        contacts={onFilterContacts(filtr, contacts)}
+      />
+    </>
+  );
+};
